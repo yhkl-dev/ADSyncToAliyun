@@ -102,7 +102,7 @@ class Aliyun:
 
     def delete_user(self, user_tuple: Tuple[str]) -> str:
         delete_user_request = ram_20150501_models.DeleteUserRequest(
-            UserName=user_tuple[0])
+            user_name=user_tuple[0])
         try:
             self.client.delete_user(delete_user_request)
             return None

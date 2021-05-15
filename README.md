@@ -19,5 +19,6 @@ python main.py
 ```shell
 cd ADSyncToAliyun
 docker build  . -t ad_sync_to_aliyun:v1
-docker run -e "access_key_id=xxxx" -e "access_key_secret=xxxx" -e "hostname=xxxx" -e "username=xxxx" -e "password=xxxx" -e "domain=xxxx" -d ad_sync_to_aliyun:v1 
+
+docker run -e access_key_id="xxxxxx" -e access_key_secret="xxxx" -e hostname="xxxxxx" -e username=xxxxxx -e password=xxxxxx -e domain="test.com"  ad_sync_to_aliyun:v1
 ```
