@@ -26,3 +26,8 @@ docker run -e access_key_id="xxxxxx" -e access_key_secret="xxxx" -e hostname="xx
 #### 说明
 
 默认四小时同步一次
+
+#### 前提条件
+
++ 有AD域
++ aliyun配置了AD域
