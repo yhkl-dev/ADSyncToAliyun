@@ -137,6 +137,12 @@ if __name__ == "__main__":
     username = os.environ.get('username')
     password = os.environ.get('password')
     domain = os.environ.get('domain')
+    print(access_key_id)
+    print(access_key_secret)
+    print(hostname)
+    print(username)
+    print(password)
+    print(domain)
 
     print("start")
     ali = Aliyun(access_key_id, access_key_secret, hostname, username,
