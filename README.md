@@ -20,7 +20,7 @@ python main.py
 cd ADSyncToAliyun
 docker build  . -t ad_sync_to_aliyun:v1
 
-docker run -e access_key_id="xxxxxx" -e access_key_secret="xxxx" -e hostname="xxxxxx" -e username=xxxxxx -e password=xxxxxx -e domain="test.com"  ad_sync_to_aliyun:v1
+docker run -e access_key_id="xxxxxx" -e access_key_secret="xxxx" -e hostname="xxxxxx" -e username=xxxxxx -e password=xxxxxx -e domain="xxxx"  ad_sync_to_aliyun:v1
 ```
 
 #### 说明
