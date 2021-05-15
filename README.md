@@ -3,7 +3,7 @@
 #### usage
 
 ```shell
-pip install -r requirements 
+pip install -r requirements.txt 
 export access_key_id=xxxx; 
 export access_key_secret=xxxx; 
 export hostname=xxxx; 
