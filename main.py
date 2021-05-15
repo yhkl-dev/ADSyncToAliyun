@@ -1,6 +1,7 @@
 import json
-import sys
-from typing import List
+import time
+import os
+from typing import Tuple
 
 from alibabacloud_ram20150501 import models as ram_20150501_models
 from alibabacloud_ram20150501.client import Client as Ram20150501Client
@@ -50,7 +51,7 @@ class AD:
             if r.get('attributes').get('cn') not in BLOCK_LIST
         ]
 
-    def get_out_users(self):
+    def get_ou_users(self):
         search_base = ",".join(
             ["dc={}".format(x) for x in self.base_domain.split('.')])
         self.conn.search(search_base=search_base,
@@ -61,14 +62,13 @@ class AD:
 
 
 class Aliyun:
-    def __init__(self, access_key, access_secret, host, username, password,
-                 base_domain) -> None:
-        self.access_key = access_key
-        self.access_secret = access_secret
+    def __init__(self, access_key_id, access_key_secret, host, username,
+                 password, base_domain) -> None:
         self.ad = AD(host, username, password, base_domain)
+        self.client = self.create_client(access_key_id, access_key_secret)
 
-    @staticmethod
     def create_client(
+        self,
         access_key_id: str,
         access_key_secret: str,
     ) -> Ram20150501Client:
@@ -79,30 +79,69 @@ class Aliyun:
         @return: Client
         @throws Exception
         """
-        config = open_api_models.Config(
-            # 您的AccessKey ID,
-            access_key_id=access_key_id,
-            # 您的AccessKey Secret,
-            access_key_secret=access_key_secret)
+        config = open_api_models.Config(access_key_id=access_key_id,
+                                        access_key_secret=access_key_secret)
         # 访问的域名
         config.endpoint = 'ram.aliyuncs.com'
         return Ram20150501Client(config)
 
-    @staticmethod
-    def list_all_ram_user(args: List[str], ) -> None:
-        client = Aliyun.create_client('accessKeyId', 'accessKeySecret')
+    def list_all_ram_user(self) -> None:
         list_users_request = ram_20150501_models.ListUsersRequest()
-        # 复制代码运行请自行打印 API 的返回值
-        client.list_users(list_users_request)
+        res = self.client.list_users(list_users_request)
+        x = res.body.users.to_map()
+        return x.get("User")
 
-    @staticmethod
-    def main(args: List[str], ) -> None:
-        client = Aliyun.create_client('accessKeyId', 'accessKeySecret')
+    def create_user(self, user_tuple: Tuple[str]) -> str:
         create_user_request = ram_20150501_models.CreateUserRequest(
-            UserName="user2", DisplayName="user2")
-        # 复制代码运行请自行打印 API 的返回值
-        client.create_user(create_user_request)
+            user_name=user_tuple[0], display_name=user_tuple[1])
+        try:
+            self.client.create_user(create_user_request)
+            return None
+        except Exception as e:
+            return str(e)
+
+    def delete_user(self, user_tuple: Tuple[str]) -> str:
+        delete_user_request = ram_20150501_models.DeleteUserRequest(
+            UserName=user_tuple[0])
+        try:
+            self.client.delete_user(delete_user_request)
+            return None
+        except Exception as e:
+            return str(e)
+
+    def sync(self):
+        ad_list = [(u['attributes']['name'], u['attributes']['displayName'])
+                   for u in self.ad.get_all_users()]
+        ram_list = [(u.get("UserName"), u.get("DisplayName"))
+                    for u in self.list_all_ram_user()]
+        # 待创建用户列表
+        create_list = list(set(ad_list) - set(ram_list))
+        # 待删除用户列表
+        delete_list = list(set(ram_list) - set(ad_list))
+
+        create_res = list(map(self.create_user, create_list))
+        print(create_res)
+        delete_res = list(map(self.delete_user, delete_list))
+        if len(create_res) == 0 and len(delete_res) == 0:
+            print("sync done")
+        else:
+            print(create_res)
+            print(delete_res)
 
 
 if __name__ == "__main__":
+
+    access_key_id = os.environ.get('access_key_id')
+    access_key_secret = os.environ.get('access_key_secret')
+    hostname = os.environ.get('hostname')
+    username = os.environ.get('username')
+    password = os.environ.get('password')
+    domain = os.environ.get('domain')
+
     print("start")
+    ali = Aliyun(access_key_id, access_key_secret, hostname, username,
+                 password, domain)
+
+    while True:
+        ali.sync()
+        time.sleep(60 * 60 * 4)

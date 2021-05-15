@@ -1,0 +1,2 @@
+alibabacloud_ram20150501==1.0.2
+ldap3==2.9
